@@ -12,6 +12,7 @@ import pyactr.declarative as declarative
 import pyactr.motor as motor
 import pyactr.vision as vision
 import pyactr.simulation as simulation
+import pyactr.temporal as temporal
 
 class ACTRModel(object):
     """
@@ -87,6 +88,7 @@ class ACTRModel(object):
         self.chunkstring = chunks.chunkstring
 
         self.visbuffers = {}
+        self.temporal = None
 
         start_goal = goals.Goal()
         self.goals = {"g": start_goal}
@@ -208,6 +210,11 @@ class ACTRModel(object):
         self.visbuffers[name_visual_location] = v2
         return v1, v2
 
+    def temporalBuffer(self, time_start=0.011, time_mult=1.1, time_noise=0.015, default_harvest=None):
+        temp = temporal.TemporalBuffer(time_start, time_mult, time_noise, default_harvest)
+        self.temporal = temp
+        return temp
+
     def set_productions(self, *rules):
         """
         Creates production rules out of functions. One or more functions can be inserted.
@@ -313,6 +320,9 @@ class ACTRModel(object):
                 if self.__buffers[name].dm != None} #dict of declarative memories used; more than 1 decmem might appear here
 
         self.__buffers["manual"] = motor.Motor() #adding motor buffer
+
+        if self.temporal:
+            self.__buffers["temporal"] = self.temporal #adding temporal buffer
 
         if self.__env:
             self.__env.initial_time = initial_time #set the initial time of the environment to be the same as simulation

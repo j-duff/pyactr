@@ -32,6 +32,7 @@ ACTRRETRIEVER = "\+" #used for regex
 MANUAL = "_manual"
 VISUAL = "_visual"
 VISUALLOCATION = "_visuallocation"
+TEMPORAL = "_temporal"
 
 EMPTYVALUE = None
 
@@ -63,7 +64,8 @@ def varval_repr(self):
 
 VarvalClass.__repr__ = varval_repr
 
-SPECIALCHUNKTYPES = {MANUAL: "cmd, key", VISUAL: "cmd, value, color, screen_pos", VISUALLOCATION: "screen_x, screen_y, color, value"}
+SPECIALCHUNKTYPES = {MANUAL: "cmd, key", VISUAL: "cmd, value, color, screen_pos",
+                     VISUALLOCATION: "screen_x, screen_y, color, value", TEMPORAL: "time"}
 
 #[{"test": {"position": (300, 170)}, "X": {"position": (300, 170)}}]
 
