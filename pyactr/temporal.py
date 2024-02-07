@@ -18,6 +18,9 @@ class TemporalBuffer(buffers.Buffer):
         self.mult = time_mult
         self.noise = time_noise
 
+    def __bool__(self):
+        return True # making sure object evaluates as True even when empty
+
     @property
     def default_harvest(self):
         """
@@ -70,10 +73,10 @@ class TemporalBuffer(buffers.Buffer):
 
         if len(mod_attr_val) > 1 or "time" not in mod_attr_val:
             raise utilities.ACTRError("Chunks in the temporal buffer must specify the attribute time and nothing else")
-        elif mod_attr_val["time"] > 0:
+        elif mod_attr_val["time"].values != "0":
             raise utilities.ACTRError("The temporal buffer must begin counting at 0")
 
-        new_chunk = chunks.Chunk("_time", **mod_attr_val)  # creates new chunk
+        new_chunk = chunks.Chunk(utilities.TEMPORAL, **mod_attr_val)  # creates new chunk
 
         self.add(new_chunk)  # put chunk using add
 

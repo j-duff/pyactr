@@ -12,6 +12,7 @@ import pyactr.goals as goals
 import pyactr.vision as vision
 import pyactr.motor as motor
 import pyactr.utilities as utilities
+import pyactr.temporal as temporal
 from pyactr.utilities import ACTRError
 
 Event = utilities.Event
@@ -768,6 +769,13 @@ class ProductionRules(object):
         elif isinstance(updated, motor.Motor):
             ret = yield from self.motorset(name, updated, otherchunk, temp_actrvariables, time)
             yield ret #motor action returns value, namely, its continuation method
+        elif isinstance(updated, temporal.TemporalBuffer):
+            yield from self.clear(name, updated, otherchunk, temp_actrvariables, time, freeing=False)
+            yield Event(roundtime(time), name, self._UNKNOWN)
+            updated.create(otherchunk, temp_actrvariables)
+            created_elem = list(updated)[0]
+            updated.state = updated._FREE
+            yield Event(roundtime(time), name, "CREATED A CHUNK: %s" % str(created_elem))
         else:
             yield from self.retrieve(name, updated, otherchunk, temp_actrvariables, time)
 
