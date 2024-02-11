@@ -6,14 +6,19 @@ import pyactr.chunks as chunks
 import pyactr.utilities as utilities
 from pyactr.utilities import ACTRError
 import pyactr.buffers as buffers
+import math
+import numpy as np
+
+Event = utilities.Event
 
 class TemporalBuffer(buffers.Buffer):
     """
     Temporal buffer.
     """
 
-    def __init__(self, time_start=0.011, time_mult=1.1, time_noise=0.015, default_harvest=None):
+    def __init__(self, environment, time_start=0.011, time_mult=1.1, time_noise=0.015, default_harvest=None):
         buffers.Buffer.__init__(self, default_harvest, data=None)
+        self.environment = environment
         self.start = time_start
         self.mult = time_mult
         self.noise = time_noise
@@ -43,7 +48,7 @@ class TemporalBuffer(buffers.Buffer):
 
     def clear(self, time=0):
         """
-        Clear buffer, add the cleared chunk into decl. memory. Decl. memory is either specified as default_harvest, when Goal is initialized, or it can be specified as harvest here.
+        Clear buffer, add the cleared chunk into decl. memory. Decl. memory is specified as default_harvest when buffer is initialized
         """
         if self._data:
             self.dm.add(self._data.pop(), time)
@@ -79,4 +84,49 @@ class TemporalBuffer(buffers.Buffer):
         new_chunk = chunks.Chunk(utilities.TEMPORAL, **mod_attr_val)  # creates new chunk
 
         self.add(new_chunk)  # put chunk using add
+        self.tick()  # initiate ticking
 
+    def tick(self):
+        tickcount = 0
+        while self._data:
+            if tickcount == 0:
+                lag = self.start + logistic_noise(self.noise * 5 * start)
+            else:
+                lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
+            yield self.environment.timeout(lag)
+            time = self.environment.show_time()
+            event = Event(time, "TEMPORAL", f"TEMPORAL TICK: {tickcount}")
+            self.modify(chunks.Chunk(utilities.TEMPORAL, **{"time": str(tickcount)}))
+            print(event[0:2])
+            tickcount += 1
+
+
+def logistic_noise(s):
+    """
+    Duplicates the act-r-noise command
+    :param s: scale parameter
+    :return:
+    """
+    noise = np.random.default_rng().logistic(loc = 0, scale = s)
+    return noise
+
+# simpy clock example
+# import simpy
+#
+# def clock(env, name, tick):
+#     while True:
+#         print(name, env.now)
+#         yield env.timeout(tick)
+#
+# env = simpy.Environment()
+# env.process(clock(env, 'fast', 0.5))
+    # <Process(clock) object at 0x...>
+# env.process(clock(env, 'slow', 1))
+    # <Process(clock) object at 0x...>
+# env.run(until=2)
+    # fast 0
+    # slow 0
+    # fast 0.5
+    # slow 1
+    # fast 1.0
+    # fast 1.5
