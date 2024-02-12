@@ -10,15 +10,15 @@ import math
 import numpy as np
 
 Event = utilities.Event
+roundtime = utilities.roundtime
 
 class TemporalBuffer(buffers.Buffer):
     """
     Temporal buffer.
     """
 
-    def __init__(self, environment, time_start=0.011, time_mult=1.1, time_noise=0.015, default_harvest=None):
+    def __init__(self, time_start=0.011, time_mult=1.1, time_noise=0.015, default_harvest=None):
         buffers.Buffer.__init__(self, default_harvest, data=None)
-        self.environment = environment
         self.start = time_start
         self.mult = time_mult
         self.noise = time_noise
@@ -84,22 +84,20 @@ class TemporalBuffer(buffers.Buffer):
         new_chunk = chunks.Chunk(utilities.TEMPORAL, **mod_attr_val)  # creates new chunk
 
         self.add(new_chunk)  # put chunk using add
-        self.tick()  # initiate ticking
 
-    def tick(self):
+    def tick(self, time):
+        """
+        Process that generates events for temporal incrementing so long as the temporal buffer has a chunk in it.
+        """
         tickcount = 0
         while self._data:
             if tickcount == 0:
-                lag = self.start + logistic_noise(self.noise * 5 * start)
+                lag = self.start + logistic_noise(self.noise * 5 * self.start)
             else:
                 lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
-            yield self.environment.timeout(lag)
-            time = self.environment.show_time()
-            event = Event(time, "TEMPORAL", f"TEMPORAL TICK: {tickcount}")
             self.modify(chunks.Chunk(utilities.TEMPORAL, **{"time": str(tickcount)}))
-            print(event[0:2])
+            yield Event(roundtime(time+lag), "TEMPORAL", f"TEMPORAL TICK: {tickcount}")
             tickcount += 1
-
 
 def logistic_noise(s):
     """

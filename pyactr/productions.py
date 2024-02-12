@@ -776,6 +776,7 @@ class ProductionRules(object):
             created_elem = list(updated)[0]
             updated.state = updated._FREE
             yield Event(roundtime(time), name, "CREATED A CHUNK: %s" % str(created_elem))
+            yield from updated.tick(roundtime(time))  # start process to generate tick events
         else:
             yield from self.retrieve(name, updated, otherchunk, temp_actrvariables, time)
 
