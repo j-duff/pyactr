@@ -95,8 +95,8 @@ class TemporalBuffer(buffers.Buffer):
                 lag = self.start + logistic_noise(self.noise * 5 * self.start)
             else:
                 lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
-            self.modify(chunks.Chunk(utilities.TEMPORAL, **{"time": str(tickcount)}))
             yield Event(roundtime(time+lag), "TEMPORAL", f"TEMPORAL TICK: {tickcount}")
+            self.modify(chunks.Chunk(utilities.TEMPORAL, **{"time": str(tickcount)}))
             tickcount += 1
 
 def logistic_noise(s):
