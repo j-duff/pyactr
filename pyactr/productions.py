@@ -987,6 +987,8 @@ class ProductionRules(object):
             if code not in self._LHSCONVENTIONS:
                 raise ACTRError("The LHS rule '%s' is invalid; every condition in LHS rules must start with one of these signs: %s" % (self.used_rulename, list(self._LHSCONVENTIONS.keys())))
             result = getattr(self, self._LHSCONVENTIONS[code])(submodule_name, self.buffers.get(submodule_name), dictionary[key], actrvariables)
+            if result is None:
+                print("Problem!")
             if not result[0]:
                 return False
             else:
@@ -1012,7 +1014,19 @@ class ProductionRules(object):
         for chunk in tested:
             testchunk.boundvars = dict(temp_actrvariables)
 
-            if testchunk <= chunk:
+            # testing temporal separately because it needs to be evaluated as a threshold
+            # and > tests aren't currently supported on the LHS
+            if chunk.typename == "_temporal" and testchunk.typename == "_temporal":
+                threshold = int(testchunk.ticks.values)
+                current_ticks = int(chunk.ticks.values)
+                if current_ticks >= threshold:
+                    temp_actrvariables = dict(testchunk.boundvars)
+                    temp_actrvariables[submodule_var] = list(self.buffers[submodule_name])[0]
+                    return True, temp_actrvariables
+                else:
+                    return False, None
+            # standard testing behavior in all other cases
+            elif testchunk <= chunk:
                 temp_actrvariables = dict(testchunk.boundvars)
                 temp_actrvariables[submodule_var] = list(self.buffers[submodule_name])[0]
                 return True, temp_actrvariables

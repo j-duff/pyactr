@@ -1,5 +1,7 @@
 """
 Simple temporal module based on Taatgen, van Rijn & Anderson (2007).
+Values of LHS checks to the temporal buffer are always evaluated as a threshold, not an exact match.
+TO DO: Test for accurate replication of Taatgen et al. model results.
 """
 
 import pyactr.chunks as chunks
@@ -22,9 +24,6 @@ class TemporalBuffer(buffers.Buffer):
         self.start = time_start
         self.mult = time_mult
         self.noise = time_noise
-
-    def __bool__(self):
-        return True # making sure object evaluates as True even when empty
 
     @property
     def default_harvest(self):
@@ -77,7 +76,7 @@ class TemporalBuffer(buffers.Buffer):
             raise utilities.ACTRError("Setting the buffer using the chunk '%s' is impossible; %s" % (otherchunk, arg))
 
         if len(mod_attr_val) > 1 or "ticks" not in mod_attr_val:
-            raise utilities.ACTRError("Chunks in the temporal buffer must specify the attribute time and nothing else")
+            raise utilities.ACTRError("Chunks in the temporal buffer must specify the attribute ticks and nothing else")
         elif mod_attr_val["ticks"].values != "0":
             raise utilities.ACTRError("The temporal buffer must begin counting at 0")
 
@@ -99,7 +98,7 @@ class TemporalBuffer(buffers.Buffer):
             try:
                 self.modify(chunks.Chunk(utilities.TEMPORAL, **{"ticks": str(tickcount)}))
             except KeyError:
-                warnings.warn(f"The temporal buffer has been reset, so the final scheduled tick ({tickcount}) was not logged.")
+                warnings.warn(f"The temporal buffer has been cleared, so the final scheduled tick ({tickcount}) was not logged.")
             tickcount += 1
 
 def logistic_noise(s):
@@ -110,24 +109,3 @@ def logistic_noise(s):
     """
     noise = np.random.default_rng().logistic(loc = 0, scale = s)
     return noise
-
-# simpy clock example
-# import simpy
-#
-# def clock(env, name, tick):
-#     while True:
-#         print(name, env.now)
-#         yield env.timeout(tick)
-#
-# env = simpy.Environment()
-# env.process(clock(env, 'fast', 0.5))
-    # <Process(clock) object at 0x...>
-# env.process(clock(env, 'slow', 1))
-    # <Process(clock) object at 0x...>
-# env.run(until=2)
-    # fast 0
-    # slow 0
-    # fast 0.5
-    # slow 1
-    # fast 1.0
-    # fast 1.5

@@ -321,7 +321,7 @@ class ACTRModel(object):
 
         self.__buffers["manual"] = motor.Motor() #adding motor buffer
 
-        if self.temporal:
+        if self.temporal is not None:
             self.__buffers["temporal"] = self.temporal #adding temporal buffer
 
         if self.__env:
