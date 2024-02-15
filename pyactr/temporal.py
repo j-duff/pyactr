@@ -6,8 +6,8 @@ import pyactr.chunks as chunks
 import pyactr.utilities as utilities
 from pyactr.utilities import ACTRError
 import pyactr.buffers as buffers
-import math
 import numpy as np
+import warnings
 
 Event = utilities.Event
 roundtime = utilities.roundtime
@@ -76,9 +76,9 @@ class TemporalBuffer(buffers.Buffer):
         except utilities.ACTRError as arg:
             raise utilities.ACTRError("Setting the buffer using the chunk '%s' is impossible; %s" % (otherchunk, arg))
 
-        if len(mod_attr_val) > 1 or "time" not in mod_attr_val:
+        if len(mod_attr_val) > 1 or "ticks" not in mod_attr_val:
             raise utilities.ACTRError("Chunks in the temporal buffer must specify the attribute time and nothing else")
-        elif mod_attr_val["time"].values != "0":
+        elif mod_attr_val["ticks"].values != "0":
             raise utilities.ACTRError("The temporal buffer must begin counting at 0")
 
         new_chunk = chunks.Chunk(utilities.TEMPORAL, **mod_attr_val)  # creates new chunk
@@ -95,8 +95,11 @@ class TemporalBuffer(buffers.Buffer):
                 lag = self.start + logistic_noise(self.noise * 5 * self.start)
             else:
                 lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
-            yield Event(roundtime(time+lag), "TEMPORAL", f"TEMPORAL TICK: {tickcount}")
-            self.modify(chunks.Chunk(utilities.TEMPORAL, **{"time": str(tickcount)}))
+            yield Event(roundtime(time+lag), "TEMPORAL", f"Incrementing time ticks to {tickcount}")
+            try:
+                self.modify(chunks.Chunk(utilities.TEMPORAL, **{"ticks": str(tickcount)}))
+            except KeyError:
+                warnings.warn(f"The temporal buffer has been reset, so the final scheduled tick ({tickcount}) was not logged.")
             tickcount += 1
 
 def logistic_noise(s):

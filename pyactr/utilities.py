@@ -65,7 +65,7 @@ def varval_repr(self):
 VarvalClass.__repr__ = varval_repr
 
 SPECIALCHUNKTYPES = {MANUAL: "cmd, key", VISUAL: "cmd, value, color, screen_pos",
-                     VISUALLOCATION: "screen_x, screen_y, color, value", TEMPORAL: "time"}
+                     VISUALLOCATION: "screen_x, screen_y, color, value", TEMPORAL: "ticks"}
 
 #[{"test": {"position": (300, 170)}, "X": {"position": (300, 170)}}]
 
