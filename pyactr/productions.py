@@ -1014,17 +1014,27 @@ class ProductionRules(object):
         for chunk in tested:
             testchunk.boundvars = dict(temp_actrvariables)
 
-            # testing temporal separately because it needs to be evaluated as a threshold
-            # and > tests aren't currently supported on the LHS
+            # testing temporal separately because it needs to support <>
+            # and relative tests aren't currently supported on the LHS
+            # this is a hack, and it doesn't support combinations with negative tests or variables
             if chunk.typename == "_temporal" and testchunk.typename == "_temporal":
-                threshold = int(testchunk.ticks.values)
+                op = testchunk.ticks.values[0]
+                threshold = int(testchunk.ticks.values[1:])
                 current_ticks = int(chunk.ticks.values)
-                if current_ticks >= threshold:
-                    temp_actrvariables = dict(testchunk.boundvars)
-                    temp_actrvariables[submodule_var] = list(self.buffers[submodule_name])[0]
-                    return True, temp_actrvariables
-                else:
-                    return False, None
+                if op == ">":
+                    if current_ticks >= threshold:
+                        temp_actrvariables = dict(testchunk.boundvars)
+                        temp_actrvariables[submodule_var] = list(self.buffers[submodule_name])[0]
+                        return True, temp_actrvariables
+                    else:
+                        return False, None
+                if op == "<":
+                    if current_ticks < threshold:
+                        temp_actrvariables = dict(testchunk.boundvars)
+                        temp_actrvariables[submodule_var] = list(self.buffers[submodule_name])[0]
+                        return True, temp_actrvariables
+                    else:
+                        return False, None
             # standard testing behavior in all other cases
             elif testchunk <= chunk:
                 temp_actrvariables = dict(testchunk.boundvars)
