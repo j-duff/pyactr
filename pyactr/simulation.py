@@ -198,7 +198,7 @@ class Simulation(object):
             if not isinstance(event, Event):
                 return event
             try:
-                yield self.__simulation.timeout(event.time-round(self.__simulation.now, 4)) #a hack -- rounded because otherwise there was a very tiny negative delay in some cases
+                yield self.__simulation.timeout(round(event.time, 4)-round(self.__simulation.now, 4)) #a hack -- rounded because otherwise there was a very tiny negative delay in some cases
             except simpy.Interrupt:
                 break
             else:
