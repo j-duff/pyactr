@@ -94,7 +94,7 @@ class TemporalBuffer(buffers.Buffer):
                 lag = self.start + logistic_noise(self.noise * 5 * self.start)
             else:
                 lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
-            yield Event(roundtime(time+lag), "TEMPORAL", f"Incrementing time ticks to {tickcount}")
+            yield Event(roundtime(time+lag+0.00005), "TEMPORAL", f"Incrementing time ticks to {tickcount}") # forcing round up
             try:
                 self.modify(chunks.Chunk(utilities.TEMPORAL, **{"ticks": str(tickcount)}))
             except KeyError:
