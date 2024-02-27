@@ -987,8 +987,6 @@ class ProductionRules(object):
             if code not in self._LHSCONVENTIONS:
                 raise ACTRError("The LHS rule '%s' is invalid; every condition in LHS rules must start with one of these signs: %s" % (self.used_rulename, list(self._LHSCONVENTIONS.keys())))
             result = getattr(self, self._LHSCONVENTIONS[code])(submodule_name, self.buffers.get(submodule_name), dictionary[key], actrvariables)
-            if result is None:
-                print("Problem!")
             if not result[0]:
                 return False
             else:

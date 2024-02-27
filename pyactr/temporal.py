@@ -94,9 +94,11 @@ class TemporalBuffer(buffers.Buffer):
                 lag = self.start + logistic_noise(self.noise * 5 * self.start)
             else:
                 lag = self.mult * lag + logistic_noise(self.noise * self.mult * lag)
-            if lag < 0: # are we ever accidentally getting negative lags?
+            if lag < 0: # forcing a floor just in case a negative lag is somehow produced
                 lag = 0.0000
-            yield Event(roundtime(time+lag+0.00005), "TEMPORAL", f"Incrementing time ticks to {tickcount}") # forcing round up
+            tick_time = roundtime(time + lag + 0.00005)
+            yield Event(tick_time, "TEMPORAL", f"Incrementing time ticks to {tickcount}") # forcing round up
+            time = tick_time
             try:
                 self.modify(chunks.Chunk(utilities.TEMPORAL, **{"ticks": str(tickcount)}))
             except KeyError:
