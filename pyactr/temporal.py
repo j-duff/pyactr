@@ -102,7 +102,8 @@ class TemporalBuffer(buffers.Buffer):
             try:
                 self.modify(chunks.Chunk(utilities.TEMPORAL, **{"ticks": str(tickcount)}))
             except KeyError:
-                warnings.warn(f"The temporal buffer has been cleared, so the final scheduled tick ({tickcount}) was not logged.")
+                continue
+                #warnings.warn(f"The temporal buffer has been cleared, so the final scheduled tick ({tickcount}) was not logged.")
             tickcount += 1
 
 def logistic_noise(s):
